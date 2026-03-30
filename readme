@@ -1,0 +1,35 @@
+# Web Infrastructure Analysis & Reconnaissance: Case Study
+**Target:** dataexplorer.msci.com
+**Role:** Red Team / Security Researcher
+
+##  Project Overview
+This repository documents a deep-dive reconnaissance and security assessment performed on a high-security financial data platform. The goal was to map the attack surface, identify hidden API endpoints, and test the resilience of Modern Cloud WAF (Web Application Firewall) implementations.
+
+## 🛠 Tools Used
+* **Nmap:** Port scanning and service fingerprinting.
+* **FFUF (Fuzz Faster U Fool):** Directory brute-forcing and API discovery.
+* **Curl/Grep:** Live header analysis and automated JS extraction.
+* **Manual JS Analysis:** De-obfuscating bundle files to find internal logic.
+
+##  Execution Phases
+
+### 1. External Reconnaissance
+Identified that the target is protected by **Microsoft Azure Front Door (WAF)**. 
+- **Open Ports:** 80 (HTTP), 443 (HTTPS).
+- **Security Headers:** Detected `x-azure-ref` and `x-ms-error-code: WebContentNotFound`, confirming Azure Blob Storage as the backend origin.
+
+### 2. JS Bundle Reverse Engineering
+Extracted critical internal data from `/client.bundle.js` and `/assets/manifest/manifest.js`. 
+**Key Findings:**
+- Discovered 100+ internal API endpoints.
+- Mapped sub-modules: `one-dev.msciapps.com` and `app-platform.dev.msciapps.com`.
+- Identified Auth0 configuration parameters (Client ID, Audience, Domain).
+
+### 3. Fuzzing & WAF Evasion Tests
+Performed extensive fuzzing with custom wordlists (SecLists).
+- **Outcome:** The WAF successfully intercepted high-frequency requests, returning `403 Forbidden` after 115 req/sec. This confirms a robust Rate Limiting and Anomaly Detection policy.
+
+## Conclusion & Professional Reflection
+Despite the target's hardened perimeter, the reconnaissance phase successfully mapped the entire backend architecture. The discovery of internal developer URLs highlights the importance of obfuscating production JS bundles to prevent "Blueprint" leaks.
+
+> **Note:** This assessment was performed for educational purposes and within ethical boundaries. No sensitive data was accessed.
